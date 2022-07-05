@@ -45,7 +45,7 @@ import com.tencent.matrix.batterycanary.stats.BatteryStats;
 import com.tencent.matrix.batterycanary.stats.BatteryStatsFeature;
 import com.tencent.matrix.batterycanary.utils.Consumer;
 import com.tencent.matrix.util.MatrixLog;
-import com.tencent.mmkv.MMKV;
+//import com.tencent.mmkv.MMKV;
 
 import java.util.concurrent.Callable;
 
@@ -68,8 +68,8 @@ public final class BatteryCanaryInitHelper {
         }
 
         // Init MMKV only when BatteryStatsFeature is & MMKVRecorder is enabled.
-        MMKV.initialize(context);
-        MMKV mmkv = MMKV.mmkvWithID("battery-stats.bin", MMKV.MULTI_PROCESS_MODE);
+//        MMKV.initialize(context);
+//        MMKV mmkv = MMKV.mmkvWithID("battery-stats.bin", MMKV.MULTI_PROCESS_MODE);
         registerUIStat((Application) context.getApplicationContext());
 
         sBatteryConfig = new BatteryMonitorConfig.Builder()
@@ -115,7 +115,7 @@ public final class BatteryCanaryInitHelper {
 
                 // BatteryStats
                 .enable(BatteryStatsFeature.class)
-                .setRecorder(new BatteryRecorder.MMKVRecorder(mmkv))
+//                .setRecorder(new BatteryRecorder.MMKVRecorder(mmkv))
                 .setStats(new BatteryStats.BatteryStatsImpl())
 
                 // Lab Feature:
