@@ -6,7 +6,7 @@ android {
     compileSdkVersion 32
 
     defaultConfig {
-        applicationId "com.llk.trace"
+        applicationId "aaa.llk.trace"
         minSdkVersion 21
         targetSdkVersion 32
         versionCode 1
@@ -37,4 +37,5 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
 
     implementation project(':matrix-trace-canary')
+    implementation project(':matrix-android-lib')
 }

@@ -5,7 +5,7 @@ buildscript {
         mavenLocal()
         google()
         mavenCentral()
-
+        maven { url 'https://www.jitpack.io' }
     }
 
     gradle.ext.KOTLIN_VERSION = "1.4.32"
@@ -32,6 +32,7 @@ allprojects {
         mavenLocal()
         google()
         mavenCentral()
+        maven { url 'https://www.jitpack.io' }
     }
 
     tasks.withType(Javadoc).all {

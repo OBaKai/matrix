@@ -24,6 +24,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.os.MessageQueue;
 import android.os.SystemClock;
+import android.util.Log;
 
 import androidx.annotation.Keep;
 import androidx.annotation.RequiresApi;
@@ -136,6 +137,7 @@ public class SignalAnrTracer extends Tracer {
         MatrixLog.i(TAG, "confirmRealAnr, isSigQuit = " + isSigQuit);
         boolean needReport = isMainThreadBlocked();
         if (needReport) {
+            Log.e("llk", "isMainThreadBlocked !!!!");
             report(false, isSigQuit);
         } else {
             new Thread(new Runnable() {
@@ -275,6 +277,7 @@ public class SignalAnrTracer extends Tracer {
                 checkErrorStateCount++;
                 boolean myAnr = checkErrorState();
                 if (myAnr) {
+                    Log.e("llk", "checkErrorStateCycle !!!!");
                     report(true, isSigQuit);
                     break;
                 }

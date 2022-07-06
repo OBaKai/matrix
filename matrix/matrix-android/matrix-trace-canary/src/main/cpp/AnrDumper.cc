@@ -42,6 +42,8 @@
 #include "Logging.h"
 #include "Support.h"
 
+#include "android_log.h"
+
 #define SIGNAL_CATCHER_THREAD_NAME "Signal Catcher"
 #define SIGNAL_CATCHER_THREAD_SIGBLK 0x1000
 #define O_WRONLY 00000001
@@ -131,6 +133,7 @@ static void sendSigToSignalCatcher() {
 }
 
 static void *anrCallback(void* arg) {
+    ALOGE("anrCallback aaaaa %s", mAnrTraceFile);
     anrDumpCallback();
     if (strlen(mAnrTraceFile) > 0) {
         hookAnrTraceWrite(false);
@@ -140,6 +143,7 @@ static void *anrCallback(void* arg) {
 }
 
 static void *siUserCallback(void* arg) {
+    ALOGE("siUserCallback aaaaa %s", mPrintTraceFile);
     if (strlen(mPrintTraceFile) > 0) {
         hookAnrTraceWrite(true);
     }
@@ -174,6 +178,7 @@ void AnrDumper::handleSignal(int sig, const siginfo_t *info, void *uc) {
     bool fromMySelf = fromPid1 == myPid || fromPid2 == myPid;
     if (sig == SIGQUIT) {
         pthread_t thd;
+        ALOGE("handleSignal pid1=%d pid2=%d my=%d", fromPid1, fromPid2, myPid);
         if (!fromMySelf) {
             pthread_create(&thd, nullptr, anrCallback, nullptr);
         } else {
