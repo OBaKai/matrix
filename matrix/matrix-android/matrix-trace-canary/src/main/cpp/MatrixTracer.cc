@@ -134,6 +134,7 @@ void writeAnr(const std::string& content, const std::string &filePath) {
 int (*original_connect)(int __fd, const struct sockaddr* __addr, socklen_t __addr_length);
 int my_connect(int __fd, const struct sockaddr* __addr, socklen_t __addr_length) {
     if (__addr!= nullptr) {
+        ALOGE("my_connect aaaaaaaaaaa %s", __addr->sa_data);
         if (strcmp(__addr->sa_data, HOOK_CONNECT_PATH) == 0) {
             ALOGE("my_connect aaaaaaaaaaa");
             signalCatcherTid = gettid();
@@ -147,6 +148,7 @@ int (*original_open)(const char *pathname, int flags, mode_t mode);
 
 int my_open(const char *pathname, int flags, mode_t mode) {
     if (pathname!= nullptr) {
+        ALOGE("my_open aaaaaaaaaaa %s", pathname);
         if (strcmp(pathname, HOOK_OPEN_PATH) == 0) {
             ALOGE("my_open aaaaaaaaaaa");
             signalCatcherTid = gettid();
@@ -158,6 +160,7 @@ int my_open(const char *pathname, int flags, mode_t mode) {
 
 ssize_t (*original_write)(int fd, const void* const __pass_object_size0 buf, size_t count);
 ssize_t my_write(int fd, const void* const buf, size_t count) {
+    ALOGE("my_write aaaaaaaaaaa tid=%d  signalCatcherTid=%d isTraceWrite=%d",  gettid(), signalCatcherTid, isTraceWrite);
     if(isTraceWrite && gettid() == signalCatcherTid) {
         ALOGE("my_write aaaaaaaaaaa");
         isTraceWrite = false;
