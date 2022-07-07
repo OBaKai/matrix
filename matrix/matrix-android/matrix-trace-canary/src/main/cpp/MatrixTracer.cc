@@ -205,6 +205,7 @@ ssize_t (*original_recvfrom)(int sockfd, void *buf, size_t len, int flags,
                              struct sockaddr *src_addr, socklen_t *addrlen);
 ssize_t my_recvfrom(int sockfd, void *buf, size_t len, int flags,
                     struct sockaddr *src_addr, socklen_t *addrlen) {
+//    ALOGE("my_recvfrom aaaaaaaaaaaaaa");
     long ret = original_recvfrom(sockfd, buf, len, flags, src_addr, addrlen);
 
     if (currentTouchFd == sockfd && inputHasSent && ret > VALIDATE_RET) {
@@ -227,7 +228,7 @@ ssize_t (*original_sendto)(int sockfd, const void *buf, size_t len, int flags,
                            const struct sockaddr *dest_addr, socklen_t addrlen);
 ssize_t my_sendto(int sockfd, const void *buf, size_t len, int flags,
                   const struct sockaddr *dest_addr, socklen_t addrlen) {
-
+//    ALOGE("my_sendto aaaaaaaaaaaaaa");
     long ret = original_sendto(sockfd, buf, len, flags, dest_addr, addrlen);
     if (ret >= 0) {
         inputHasSent = true;
@@ -284,11 +285,14 @@ void hookAnrTraceWrite(bool isSiUser) {
         return;
     }
 
+    ALOGE("hookAnrTraceWrite fromMyPrintTrace=%d isSiUser=%d", fromMyPrintTrace, isSiUser);
     if (!fromMyPrintTrace && isSiUser) {
+        ALOGE("hookAnrTraceWrite ffffffffff");
         return;
     }
 
     if (isHooking) {
+        ALOGE("hookAnrTraceWrite ffffffffff 2");
         return;
     }
 
@@ -366,18 +370,12 @@ int llk_open(const char *pathname, int flags, mode_t mode) {
     return original_open(pathname, flags, mode);
 }
 
-int (*original_close)(const int fd);
-int llk_close(const int fd) {
-    ALOGE("llk_close aaaaaaaaaaa %d", fd);
-    original_close(fd);
-}
-
 static void hookTest() {
     ALOGE("hookTest 111111111111111");
-    xhook_register(".*\\.so$", "open", (void *) llk_open, (void **) (&original_open));
-    xhook_register(".*\\.so$", "close", (void *) llk_close, (void **) (&original_close));
-    xhook_refresh(true);
-    ALOGE("hookTest 2222222222222222");
+//    xhook_register(".*\\.so$", "open", (void *) llk_open, (void **) (&original_open));
+//    xhook_refresh(true);
+//    ALOGE("hookTest 2222222222222222");
+    hookAnrTraceWrite(false);
 }
 
 template <typename T, std::size_t sz>

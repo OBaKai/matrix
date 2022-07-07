@@ -83,6 +83,7 @@ public class SignalAnrTracer extends Tracer {
     @Override
     protected void onAlive() {
         super.onAlive();
+        testHookaaaaa();
         if (!hasInit) {
             nativeInitSignalAnrDetective(sAnrTraceFilePath, sPrintTraceFilePath);
             AppForegroundUtil.INSTANCE.init();

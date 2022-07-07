@@ -57,6 +57,7 @@ public class App extends Application {
                 .enableIdleHandlerTrace(traceEnable)                    // Introduced in Matrix 2.0
                 .enableMainThreadPriorityTrace(true)                    // Introduced in Matrix 2.0
                 .enableSignalAnrTrace(signalAnrTraceEnable)             // Introduced in Matrix 2.0
+                .enableTouchEventTrace(true)
                 .anrTracePath(anrTraceFile.getAbsolutePath())
                 .printTracePath(printTraceFile.getAbsolutePath())
                 .splashActivities("sample.tencent.matrix.SplashActivity;")
