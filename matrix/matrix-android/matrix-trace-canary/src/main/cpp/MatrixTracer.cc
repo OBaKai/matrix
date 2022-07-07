@@ -31,6 +31,8 @@
 #include <linux/prctl.h>
 #include <sys/prctl.h>
 #include <sys/resource.h>
+#include <stdlib.h>
+#include <fcntl.h>
 
 #include <cstdio>
 #include <ctime>
@@ -356,6 +358,28 @@ static void nativePrintTrace() {
     kill(getpid(), SIGQUIT);
 }
 
+int llk_open(const char *pathname, int flags, mode_t mode) {
+    ALOGE("llk_open aaaaaaaaaaa %s", pathname);
+    if (pathname!= nullptr) {
+        ALOGE("llk_open aaaaaaaaaaa %s", pathname);
+    }
+    return original_open(pathname, flags, mode);
+}
+
+int (*original_close)(const int fd);
+int llk_close(const int fd) {
+    ALOGE("llk_close aaaaaaaaaaa %d", fd);
+    original_close(fd);
+}
+
+static void hookTest() {
+    ALOGE("hookTest 111111111111111");
+    xhook_register(".*\\.so$", "open", (void *) llk_open, (void **) (&original_open));
+    xhook_register(".*\\.so$", "close", (void *) llk_close, (void **) (&original_close));
+    xhook_refresh(true);
+    ALOGE("hookTest 2222222222222222");
+}
+
 template <typename T, std::size_t sz>
 static inline constexpr std::size_t NELEM(const T(&)[sz]) { return sz; }
 
@@ -363,6 +387,7 @@ static const JNINativeMethod ANR_METHODS[] = {
     {"nativeInitSignalAnrDetective", "(Ljava/lang/String;Ljava/lang/String;)V", (void *) nativeInitSignalAnrDetective},
     {"nativeFreeSignalAnrDetective", "()V", (void *) nativeFreeSignalAnrDetective},
     {"nativePrintTrace", "()V", (void *) nativePrintTrace},
+    {"hookTest", "()V", (void *) hookTest},
 };
 
 static const JNINativeMethod THREAD_PRIORITY_METHODS[] = {

@@ -6,6 +6,8 @@ import android.os.Bundle;
 import android.os.SystemClock;
 import android.view.View;
 
+import com.tencent.matrix.trace.tracer.SignalAnrTracer;
+
 public class MainActivity extends AppCompatActivity {
 
     @Override
@@ -86,5 +88,13 @@ public class MainActivity extends AppCompatActivity {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+    }
+
+    public void test_hook(View view) {
+        SignalAnrTracer.testHookaaaaa();
+    }
+
+    public void test_sys_call(View view) {
+        NativeHookee.test();
     }
 }

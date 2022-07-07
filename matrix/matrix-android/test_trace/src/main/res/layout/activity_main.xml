@@ -21,4 +21,18 @@
         android:text="test anr 2"
         />
 
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:onClick="test_hook"
+        android:text="test hook"
+        />
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:onClick="test_sys_call"
+        android:text="test sys call"
+        />
+
 </LinearLayout>
