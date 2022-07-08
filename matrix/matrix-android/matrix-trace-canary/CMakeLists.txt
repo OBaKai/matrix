@@ -10,7 +10,6 @@ add_library(trace-canary
         src/main/cpp/SignalHandler.cc
         src/main/cpp/Support.cc
         src/main/cpp/AnrDumper.cc
-        src/main/cpp/TouchEventTracer.cc
         src/main/cpp/nativehelper/managed_jnienv.cc
              )
 
