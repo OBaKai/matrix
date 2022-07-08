@@ -1,88 +1,48 @@
 package com.llk.trace;
 
+import androidx.annotation.Keep;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.os.SystemClock;
+import android.util.Log;
 import android.view.View;
+import android.widget.TextView;
 
 import com.tencent.matrix.trace.tracer.SignalAnrTracer;
+import com.tencent.matrix.trace.util.Utils;
+import com.tencent.matrix.util.MatrixLog;
+
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 
 public class MainActivity extends AppCompatActivity {
+
+    private static TextView textView;
+
+    private static Handler handler = new Handler(Looper.getMainLooper()){
+        @Override
+        public void handleMessage(@NonNull Message msg) {
+            super.handleMessage(msg);
+            textView.setText((String)msg.obj);
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        textView = findViewById(R.id.tv);
     }
 
-    public void test_anr(View view) {
-        A();
-    }
-
-
-
-    private void A() {
-        B();
-        H();
-        L();
-        SystemClock.sleep(800);
-    }
-
-    private void B() {
-        C();
-        G();
-        SystemClock.sleep(200);
-    }
-
-    private void C() {
-        D();
-        E();
-        F();
-        SystemClock.sleep(100);
-    }
-
-    private void D() {
-        SystemClock.sleep(20);
-    }
-
-    private void E() {
-        SystemClock.sleep(20);
-    }
-
-    private void F() {
-        SystemClock.sleep(20);
-    }
-
-    private void G() {
-        SystemClock.sleep(20);
-    }
-
-    private void H() {
-        SystemClock.sleep(20);
-        I();
-        J();
-        K();
-    }
-
-    private void I() {
-        SystemClock.sleep(20);
-    }
-
-    private void J() {
-        SystemClock.sleep(6);
-    }
-
-    private void K() {
-        SystemClock.sleep(10);
-    }
-
-
-    private void L() {
-        SystemClock.sleep(10000);
-    }
-
-    public void test_anr_2(View view) {
+    public void make_anr(View view) {
+        SignalAnrTracer.printTrace();
         try {
             Thread.sleep(20000);
         } catch (InterruptedException e) {
@@ -90,11 +50,47 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void test_hook(View view) {
-        SignalAnrTracer.testHookaaaaa();
+    //native反调用的方法，执行在子线程（Signal Catcher）的
+    //但是也要开个线程干活，别堵人家干活啊啊啊啊啊啊啊啊啊啊啊啊
+    @Keep
+    private static void onAnrTraceWriteFinish() {
+        Log.e("llk", "onAnrTraceWriteFinish");
+        new Thread(() -> {
+            String s = getFileContent(App.anrTraceFilePath);
+            Message msg = Message.obtain();
+            msg.obj = s;
+            handler.sendMessage(msg);
+        }).start();
     }
 
-    public void test_sys_call(View view) {
-        NativeHookee.test();
+    public static String getFileContent(String filePath){
+        BufferedReader reader = null;
+        try {
+            reader = new BufferedReader(new InputStreamReader(new FileInputStream(filePath), "UTF-8"));
+            StringBuilder sb = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                sb.append(line).append("\n");
+            }
+            return sb.toString();
+        } catch (Throwable t) {
+            if (null != reader) {
+                try {
+                    reader.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        } finally {
+            if (null != reader) {
+                try {
+                    reader.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        return null;
     }
 }

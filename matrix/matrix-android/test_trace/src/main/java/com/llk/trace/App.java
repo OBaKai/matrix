@@ -18,6 +18,8 @@ public class App extends Application {
 
     private static final String TAG = App.class.getSimpleName();
 
+    public static String anrTraceFilePath;
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -48,6 +50,8 @@ public class App extends Application {
         File anrTraceFile = new File(traceFileDir, "anr_trace");    // path : /data/user/0/sample.tencent.matrix/files/matrix_trace/anr_trace
         File printTraceFile = new File(traceFileDir, "print_trace");    // path : /data/user/0/sample.tencent.matrix/files/matrix_trace/print_trace
 
+        anrTraceFilePath = anrTraceFile.getAbsolutePath();
+
         TraceConfig traceConfig = new TraceConfig.Builder()
                 .dynamicConfig(dynamicConfig)
                 .enableFPS(fpsEnable)
@@ -58,7 +62,7 @@ public class App extends Application {
                 .enableMainThreadPriorityTrace(true)                    // Introduced in Matrix 2.0
                 .enableSignalAnrTrace(signalAnrTraceEnable)             // Introduced in Matrix 2.0
                 .enableTouchEventTrace(true)
-                .anrTracePath(anrTraceFile.getAbsolutePath())
+                .anrTracePath(anrTraceFilePath)
                 .printTracePath(printTraceFile.getAbsolutePath())
                 .splashActivities("sample.tencent.matrix.SplashActivity;")
                 .isDebug(true)

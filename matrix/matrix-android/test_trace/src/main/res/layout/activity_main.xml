@@ -10,29 +10,21 @@
     <Button
         android:layout_width="match_parent"
         android:layout_height="100dp"
-        android:onClick="test_anr"
-        android:text="test anr 1"
+        android:onClick="make_anr"
+        android:text="make anr"
         />
 
-    <Button
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="100dp"
-        android:onClick="test_anr_2"
-        android:text="test anr 2"
-        />
-
-    <Button
-        android:layout_width="match_parent"
-        android:layout_height="100dp"
-        android:onClick="test_hook"
-        android:text="test hook"
-        />
-
-    <Button
-        android:layout_width="match_parent"
-        android:layout_height="100dp"
-        android:onClick="test_sys_call"
-        android:text="test sys call"
-        />
+        android:layout_height="0dp"
+        android:layout_weight="1">
+        <TextView
+            android:id="@+id/tv"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="抓取trace成功，会在这里打印"
+            android:textColor="#ff00ff"
+            />
+    </ScrollView>
 
 </LinearLayout>

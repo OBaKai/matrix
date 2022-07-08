@@ -24,6 +24,7 @@
 bool anrDumpCallback();
 bool anrDumpTraceCallback();
 bool nativeBacktraceDumpCallback();
+bool call_onAnrTraceWriteFinish();
 bool printTraceCallback();
 void hookAnrTraceWrite(bool isSigUser);
 void unHookAnrTraceWrite();

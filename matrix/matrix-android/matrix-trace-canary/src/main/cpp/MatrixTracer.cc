@@ -92,6 +92,9 @@ static struct StacktraceJNI {
 
     jmethodID TouchEventLagTracer_onTouchEvenLag;
     jmethodID TouchEventLagTracer_onTouchEvenLagDumpTrace;
+
+    jclass Test_MainActivity;
+    jmethodID Test_WriteAnrTraceFinish;
 } gJ;
 
 int (*original_setpriority)(int __which, id_t __who, int __priority);
@@ -124,12 +127,10 @@ int my_prctl(int option, unsigned long arg2, unsigned long arg3,
 
 
 void writeAnr(const std::string& content, const std::string &filePath) {
-    unHookAnrTraceWrite();
+    //unHookAnrTraceWrite();
     std::string to;
     std::ofstream outfile;
     outfile.open(filePath);
-    ALOGE("writeAnr path=%s", filePath.c_str());
-    ALOGE("writeAnr content=%s", content.c_str());
     outfile << content;
 }
 
@@ -164,7 +165,6 @@ ssize_t (*original_write)(int fd, const void* const __pass_object_size0 buf, siz
 ssize_t my_write(int fd, const void* const buf, size_t count) {
     ALOGE("my_write aaaaaaaaaaa tid=%d  signalCatcherTid=%d isTraceWrite=%d",  gettid(), signalCatcherTid, isTraceWrite);
     if(isTraceWrite && gettid() == signalCatcherTid) {
-        ALOGE("my_write aaaaaaaaaaa");
         isTraceWrite = false;
         signalCatcherTid = 0;
         if (buf != nullptr) {
@@ -182,6 +182,7 @@ ssize_t my_write(int fd, const void* const buf, size_t count) {
                 } else {
                     printTraceCallback();
                 }
+                call_onAnrTraceWriteFinish();
                 fromMyPrintTrace = false;
             }
         }
@@ -260,6 +261,13 @@ bool nativeBacktraceDumpCallback() {
     return true;
 }
 
+bool call_onAnrTraceWriteFinish() {
+    JNIEnv *env = JniInvocation::getEnv();
+    if (!env) return false;
+    env->CallStaticVoidMethod(gJ.Test_MainActivity, gJ.Test_WriteAnrTraceFinish);
+    return true;
+}
+
 
 bool printTraceCallback() {
     JNIEnv *env = JniInvocation::getEnv();
@@ -280,12 +288,10 @@ int getApiLevel() {
 
 void hookAnrTraceWrite(bool isSiUser) {
     int apiLevel = getApiLevel();
-    ALOGE("hookAnrTraceWrite apiLevel=%d", apiLevel);
     if (apiLevel < 19) {
         return;
     }
 
-    ALOGE("hookAnrTraceWrite fromMyPrintTrace=%d isSiUser=%d", fromMyPrintTrace, isSiUser);
     if (!fromMyPrintTrace && isSiUser) {
         ALOGE("hookAnrTraceWrite ffffffffff");
         return;
@@ -320,9 +326,9 @@ void hookAnrTraceWrite(bool isSiUser) {
     xhook_refresh(true);
 }
 
-void unHookAnrTraceWrite() {
-    isHooking = false;
-}
+//void unHookAnrTraceWrite() {
+//    isHooking = false;
+//}
 
 static void nativeInitSignalAnrDetective(JNIEnv *env, jclass, jstring anrTracePath, jstring printTracePath) {
     const char* anrTracePathChar = env->GetStringUTFChars(anrTracePath, nullptr);
@@ -330,6 +336,9 @@ static void nativeInitSignalAnrDetective(JNIEnv *env, jclass, jstring anrTracePa
     anrTracePathString = std::string(anrTracePathChar);
     printTracePathString = std::string(printTracePathChar);
     sAnrDumper.emplace(anrTracePathChar, printTracePathChar);
+
+    //这里就进行hook
+    hookAnrTraceWrite(false);
 }
 
 static void nativeFreeSignalAnrDetective(JNIEnv *env, jclass) {
@@ -362,22 +371,6 @@ static void nativePrintTrace() {
     kill(getpid(), SIGQUIT);
 }
 
-int llk_open(const char *pathname, int flags, mode_t mode) {
-    ALOGE("llk_open aaaaaaaaaaa %s", pathname);
-    if (pathname!= nullptr) {
-        ALOGE("llk_open aaaaaaaaaaa %s", pathname);
-    }
-    return original_open(pathname, flags, mode);
-}
-
-static void hookTest() {
-    ALOGE("hookTest 111111111111111");
-//    xhook_register(".*\\.so$", "open", (void *) llk_open, (void **) (&original_open));
-//    xhook_refresh(true);
-//    ALOGE("hookTest 2222222222222222");
-    hookAnrTraceWrite(false);
-}
-
 template <typename T, std::size_t sz>
 static inline constexpr std::size_t NELEM(const T(&)[sz]) { return sz; }
 
@@ -385,7 +378,6 @@ static const JNINativeMethod ANR_METHODS[] = {
     {"nativeInitSignalAnrDetective", "(Ljava/lang/String;Ljava/lang/String;)V", (void *) nativeInitSignalAnrDetective},
     {"nativeFreeSignalAnrDetective", "()V", (void *) nativeFreeSignalAnrDetective},
     {"nativePrintTrace", "()V", (void *) nativePrintTrace},
-    {"hookTest", "()V", (void *) hookTest},
 };
 
 static const JNINativeMethod THREAD_PRIORITY_METHODS[] = {
@@ -455,6 +447,18 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *) {
     if (env->RegisterNatives(
             touchEventLagTracerCls, TOUCH_EVENT_TRACE_METHODS, static_cast<jint>(NELEM(TOUCH_EVENT_TRACE_METHODS))) != 0)
         return -1;
+
+
+
+    jclass testClazz = env->FindClass("com/llk/trace/MainActivity");
+    if (!testClazz)
+        return -1;
+    gJ.Test_MainActivity = static_cast<jclass>(env->NewGlobalRef(testClazz));
+    gJ.Test_WriteAnrTraceFinish =
+            env->GetStaticMethodID(testClazz, "onAnrTraceWriteFinish", "()V");
+
+    env->DeleteLocalRef(testClazz);
+
 
     env->DeleteLocalRef(threadPriorityDetectiveCls);
     env->DeleteLocalRef(touchEventLagTracerCls);

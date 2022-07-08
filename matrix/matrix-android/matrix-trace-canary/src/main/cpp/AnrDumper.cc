@@ -135,18 +135,18 @@ static void sendSigToSignalCatcher() {
 static void *anrCallback(void* arg) {
     ALOGE("anrCallback aaaaa %s", mAnrTraceFile);
     anrDumpCallback();
-    if (strlen(mAnrTraceFile) > 0) {
-        hookAnrTraceWrite(false);
-    }
+//    if (strlen(mAnrTraceFile) > 0) {
+//        hookAnrTraceWrite(false);
+//    }
     sendSigToSignalCatcher();
     return nullptr;
 }
 
 static void *siUserCallback(void* arg) {
     ALOGE("siUserCallback aaaaa %s", mPrintTraceFile);
-    if (strlen(mPrintTraceFile) > 0) {
-        hookAnrTraceWrite(true);
-    }
+//    if (strlen(mPrintTraceFile) > 0) {
+//        hookAnrTraceWrite(true);
+//    }
 
     sendSigToSignalCatcher();
     return nullptr;

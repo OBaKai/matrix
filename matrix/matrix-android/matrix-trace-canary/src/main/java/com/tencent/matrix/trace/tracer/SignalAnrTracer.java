@@ -83,7 +83,6 @@ public class SignalAnrTracer extends Tracer {
     @Override
     protected void onAlive() {
         super.onAlive();
-        testHookaaaaa();
         if (!hasInit) {
             nativeInitSignalAnrDetective(sAnrTraceFilePath, sPrintTraceFilePath);
             AppForegroundUtil.INSTANCE.init();
@@ -348,12 +347,6 @@ public class SignalAnrTracer extends Tracer {
     private static native void nativeFreeSignalAnrDetective();
 
     private static native void nativePrintTrace();
-
-    private static native void hookTest();
-
-    public static void testHookaaaaa() {
-        hookTest();
-    }
 
     public interface SignalAnrDetectedListener {
         void onAnrDetected(String stackTrace, String mMessageString, long mMessageWhen, boolean fromProcessErrorState, String cpuset);
