@@ -43,25 +43,31 @@ public class HprofReader {
         hv.visitEnd();
     }
 
+    /**
+     * 读取文件头
+     */
     private void acceptHeader(HprofVisitor hv) throws IOException {
-        final String text = IOUtil.readNullTerminatedString(mStreamIn);
-        final int idSize = IOUtil.readBEInt(mStreamIn);
+        final String text = IOUtil.readNullTerminatedString(mStreamIn);  //连续读取数据，直到读取到 null
+        final int idSize = IOUtil.readBEInt(mStreamIn); // int 是 4 字节
         if (idSize <= 0 || idSize >= (Integer.MAX_VALUE >> 1)) {
             throw new IOException("bad idSize: " + idSize);
         }
-        final long timestamp = IOUtil.readBELong(mStreamIn);
+        final long timestamp = IOUtil.readBELong(mStreamIn); // long 是 8 字节
         mIdSize = idSize;
-        hv.visitHeader(text, idSize, timestamp);
+        hv.visitHeader(text, idSize, timestamp); // 通知 Visitor
     }
 
+    /**
+     * 读取所有Record
+     */
     private void acceptRecord(HprofVisitor hv) throws IOException {
         try {
             while (true) {
-                final int tag = mStreamIn.read();
-                final int timestamp = IOUtil.readBEInt(mStreamIn);
-                final long length = IOUtil.readBEInt(mStreamIn) & 0x00000000FFFFFFFFL;
+                final int tag = mStreamIn.read(); // TAG 区分类型
+                final int timestamp = IOUtil.readBEInt(mStreamIn); // 时间戳
+                final long length = IOUtil.readBEInt(mStreamIn) & 0x00000000FFFFFFFFL;  // Body 字节长
                 switch (tag) {
-                    case HprofConstants.RECORD_TAG_STRING:
+                    case HprofConstants.RECORD_TAG_STRING: // 字符串类型
                         acceptStringRecord(timestamp, length, hv);
                         break;
                     case HprofConstants.RECORD_TAG_LOAD_CLASS:
@@ -96,10 +102,13 @@ public class HprofReader {
         }
     }
 
+    /**
+     * 读取 String类型 record
+     */
     private void acceptStringRecord(int timestamp, long length, HprofVisitor hv) throws IOException {
-        final ID id = IOUtil.readID(mStreamIn, mIdSize);
-        final String text = IOUtil.readString(mStreamIn, length - mIdSize);
-        hv.visitStringRecord(id, text, timestamp, length);
+        final ID id = IOUtil.readID(mStreamIn, mIdSize); // IdSize 在读取文件头时确定
+        final String text = IOUtil.readString(mStreamIn, length - mIdSize); // Body 字节长减去 IdSize 剩下的就是字符串内容
+        hv.visitStringRecord(id, text, timestamp, length); // 通知 Visitor
     }
 
     private void acceptLoadClassRecord(int timestamp, long length, HprofVisitor hv) throws IOException {

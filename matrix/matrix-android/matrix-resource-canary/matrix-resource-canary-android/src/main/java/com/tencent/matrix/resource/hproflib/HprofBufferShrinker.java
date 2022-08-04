@@ -16,6 +16,8 @@
 
 package com.tencent.matrix.resource.hproflib;
 
+import android.util.Log;
+
 import com.tencent.matrix.resource.common.utils.DigestUtil;
 import com.tencent.matrix.resource.hproflib.model.Field;
 import com.tencent.matrix.resource.hproflib.model.ID;
@@ -161,20 +163,21 @@ public class HprofBufferShrinker {
         }
     }
 
+    /**
+     * 裁剪Hprof
+     */
     public void shrink(File hprofIn, File hprofOut) throws IOException {
         FileInputStream is = null;
         OutputStream os = null;
         try {
             is = new FileInputStream(hprofIn);
             os = new BufferedOutputStream(new FileOutputStream(hprofOut));
-            final HprofReader reader = new HprofReader(new BufferedInputStream(is));
-            reader.accept(new HprofInfoCollectVisitor());
-            // Reset.
-            is.getChannel().position(0);
-            reader.accept(new HprofKeptBufferCollectVisitor());
-            // Reset.
-            is.getChannel().position(0);
-            reader.accept(new HprofBufferShrinkVisitor(new HprofWriter(os)));
+            final HprofReader reader = new HprofReader(new BufferedInputStream(is)); //读取文件
+            reader.accept(new HprofInfoCollectVisitor()); //第一遍读取
+            is.getChannel().position(0); //恢复读取位置，重头开始
+            reader.accept(new HprofKeptBufferCollectVisitor()); //第二遍读取
+            is.getChannel().position(0); //恢复读取位置，重头开始
+            reader.accept(new HprofBufferShrinkVisitor(new HprofWriter(os))); //第三遍读取，输出裁剪后的Hprof文件
         } finally {
             if (os != null) {
                 try {
@@ -207,6 +210,7 @@ public class HprofBufferShrinker {
 
         @Override
         public void visitStringRecord(ID id, String text, int timestamp, long length) {
+            Log.e("llk", "111 visitStringRecord " + text);
             if (mBitmapClassNameStringId == null && "android.graphics.Bitmap".equals(text)) {
                 mBitmapClassNameStringId = id;
             } else if (mMBufferFieldNameStringId == null && "mBuffer".equals(text)) {
@@ -222,6 +226,7 @@ public class HprofBufferShrinker {
 
         @Override
         public void visitLoadClassRecord(int serialNumber, ID classObjectId, int stackTraceSerial, ID classNameStringId, int timestamp, long length) {
+            Log.e("llk", "222 visitLoadClassRecord " + classNameStringId + " " + classObjectId.toString());
             if (mBmpClassId == null && mBitmapClassNameStringId != null && mBitmapClassNameStringId.equals(classNameStringId)) {
                 mBmpClassId = classObjectId;
             } else if (mStringClassId == null && mStringClassNameStringId != null && mStringClassNameStringId.equals(classNameStringId)) {
@@ -235,8 +240,10 @@ public class HprofBufferShrinker {
                 @Override
                 public void visitHeapDumpClass(ID id, int stackSerialNumber, ID superClassId, ID classLoaderId, int instanceSize, Field[] staticFields, Field[] instanceFields) {
                     if (mBmpClassInstanceFields == null && mBmpClassId != null && mBmpClassId.equals(id)) {
+                        Log.e("llk", "333 visitHeapDumpClass bitmap " + instanceFields.length);
                         mBmpClassInstanceFields = instanceFields;
                     } else if (mStringClassInstanceFields == null && mStringClassId != null && mStringClassId.equals(id)) {
+                        Log.e("llk", "333 visitHeapDumpClass string " + instanceFields.length);
                         mStringClassInstanceFields = instanceFields;
                     }
                 }
